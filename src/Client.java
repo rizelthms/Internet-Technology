@@ -14,6 +14,7 @@ public class Client extends Thread {
         getReaderThread().start();
         getWriterThread().start();
     }
+
     private final Thread readerThread = new Thread(() -> {
         try {
             reader();
@@ -21,6 +22,7 @@ public class Client extends Thread {
             throw new RuntimeException(e);
         }
     });
+
     private final Thread writerThread = new Thread(() -> {
         try {
             writer();
@@ -28,6 +30,7 @@ public class Client extends Thread {
             throw new RuntimeException(e);
         }
     });
+
     private void writer() throws IOException, InterruptedException {
         Scanner scanner = new Scanner(System.in);
         while (true) {
@@ -41,6 +44,7 @@ public class Client extends Thread {
             }
         }
     }
+
     private void reader() throws IOException, InterruptedException {
         while (true) {
             String message = getReader().readLine();
@@ -60,10 +64,12 @@ public class Client extends Thread {
             }
         }
     }
+
     public void pong() {
         getWriter().println("PONG");
         getWriter().flush();
     }
+
     private void help() {
         System.out.println(
                 """
@@ -76,21 +82,27 @@ public class Client extends Thread {
                 BCST <message>
                 broadcasts message to all users that are logged in.""");
     }
+
     public PrintWriter getWriter() {
         return writer;
     }
+
     public void setWriter(PrintWriter writer) {
         this.writer = writer;
     }
+
     public Socket getSocket() {
         return socket;
     }
+
     public void setSocket(Socket socket) {
         this.socket = socket;
     }
+
     public BufferedReader getReader() {
         return reader;
     }
+
     public void setReader(BufferedReader reader) {
         this.reader = reader;
     }
