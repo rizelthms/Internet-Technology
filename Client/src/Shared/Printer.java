@@ -1,6 +1,6 @@
 package Shared;
 
-public class Helper {
+public class Printer {
     public enum ConsoleColour {
         BLUE,
         PURPLE,

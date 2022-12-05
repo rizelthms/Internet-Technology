@@ -1,8 +1,12 @@
 package Client;
 
-import Shared.Helper;
+import Shared.Printer;
+import Shared.Protocol;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,13 +25,12 @@ public class Client extends Thread {
             writer = new PrintWriter(socket.getOutputStream());
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-
             //init reader
             new Thread(() -> {
                 try {
                     reader();
                 } catch (IOException | InterruptedException e) {
-                    Helper.printLineColour("Problems connecting to the server!", Helper.ConsoleColour.RED);
+                    Printer.printLineColour("Problems connecting to the server!", Printer.ConsoleColour.RED);
                 }
             }).start();
 
@@ -36,11 +39,11 @@ public class Client extends Thread {
                 try {
                     writer();
                 } catch (IOException | InterruptedException e) {
-                    Helper.printLineColour("Problems connecting to the server!", Helper.ConsoleColour.RED);
+                    Printer.printLineColour("Problems connecting to the server!", Printer.ConsoleColour.RED);
                 }
             }).start();
         } catch (Exception e) {
-            Helper.printLineColour("Problems connecting to the server!", Helper.ConsoleColour.RED);
+            Printer.printLineColour("Problems connecting to the server!", Printer.ConsoleColour.RED);
         }
     }
 
@@ -49,20 +52,22 @@ public class Client extends Thread {
 
         while (true) {
             if (!isLoggedIn)
-                Helper.printColourBold("username: ", Helper.ConsoleColour.WHITE);
+                Printer.printColourBold("username: ", Printer.ConsoleColour.WHITE);
 
             String message = scanner.nextLine();
 
-            if (message.startsWith("QUIT")) {
-                writer.println(message);
-            } else if (!isLoggedIn) {
-                isLoggedIn = true;
+            if (!message.isEmpty()) {
+                if (message.startsWith(Protocol.QUIT)) {
+                    writer.println(message);
+                } else if (!isLoggedIn) {
+                    isLoggedIn = true;
 
-                writer.println("IDENT " + message);
-            } else {
-                writer.println("BCST " + message);
+                    writer.println(Protocol.IDENTIFY + " " + message);
+                } else {
+                    writer.println(Protocol.BROADCAST + " " + message);
+                }
+                writer.flush();
             }
-            writer.flush();
         }
     }
 
@@ -71,8 +76,8 @@ public class Client extends Thread {
             var message = reader.readLine().split(" ");
 
             switch (message[0]) {
-                case "OK" -> {
-                    if (message[1].equals("Goodbye")) {
+                case Protocol.OK -> {
+                    if (message[1].equals(Protocol.GOODBYE)) {
                         System.out.println("Cya next time");
 
                         reader.close();
@@ -80,40 +85,40 @@ public class Client extends Thread {
                         socket.close();
                         System.exit(0);
 
-                    } else if (message[1].equals("IDENT")) {
-                        Helper.printLineColourBold(
+                    } else if (message[1].equals(Protocol.IDENTIFY)) {
+                        Printer.printLineColourBold(
                                 "Welcome " + message[2] + "!",
-                                Helper.ConsoleColour.GREEN);
+                                Printer.ConsoleColour.GREEN);
                     }
                 }
-                case "PING" -> {
-                    writer.println("PONG");
+                case Protocol.PING -> {
+                    writer.println(Protocol.PONG);
                     writer.flush();
                 }
-                case "INIT" -> Helper.printLineColourBold(
+                case Protocol.INITIALISE -> Printer.printLineColourBold(
                         "You are connected to our chat server!",
-                        Helper.ConsoleColour.GREEN);
-                case "BCST" -> {
+                        Printer.ConsoleColour.GREEN);
+                case Protocol.BROADCAST -> {
                     if (users.stream().noneMatch(user -> user.username().equals(message[1])))
                         // select 1 of 4 colours (the last four are for server messages)
                         users.add(
                                 new User(
                                         message[1],
-                                        Helper.ConsoleColour.values()[(users.size() % 8 % 4)]));
+                                        Printer.ConsoleColour.values()[(users.size() % 4)]));
 
-                    Helper.printLineColour(
+                    Printer.printLineColour(
                             "[" + message[1] + "] " + String.join(" ", Arrays.copyOfRange(message, 2, message.length)),
                             users.stream().filter(user -> user.username().equals(message[1])).findFirst().get().colour());
                 }
                 // all fails
                 default -> {
-                    Helper.printLineColour(
+                    Printer.printLineColour(
                             String.join(" ", Arrays.copyOfRange(message, 1, message.length)),
-                            Helper.ConsoleColour.RED);
+                            Printer.ConsoleColour.RED);
 
-                    if (message[0].equals("FAIL01") || message[0].equals("FAIL02")) {
+                    if (message[0].equals(Protocol.FAIL01) || message[0].equals(Protocol.FAIL02)) {
                         isLoggedIn = false;
-                        Helper.printColourBold("username: ", Helper.ConsoleColour.WHITE);
+                        Printer.printColourBold("username: ", Printer.ConsoleColour.WHITE);
                     }
                 }
             }
