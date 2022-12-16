@@ -149,7 +149,7 @@ public class Client extends Thread {
 
                     if (message[0].equals(Protocol.FAIL01) || message[0].equals(Protocol.FAIL02) || message[0].equals(Protocol.FAIL03)) {
                         isLoggedIn = false;
-                        Printer.printColourBold("username: ", Printer.ConsoleColour.WHITE);
+                        Printer.printColourBold("Username: ", Printer.ConsoleColour.WHITE);
                     }
                 }
             }

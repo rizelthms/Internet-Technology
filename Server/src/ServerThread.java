@@ -68,14 +68,14 @@ public class ServerThread extends Thread {
                             createUser(msg);
                         }else{
                             //Already logged in
-                            writer.println(Protocol.FAIL04 +  "User cannot login twice");
+                            writer.println(Protocol.FAIL04);
                         }
                     }
                     case Protocol.BROADCAST -> {
                         if(username!=null) {
                             broadcastMessage(String.join(" ", msg));
                         }else{
-                            writer.println(Protocol.FAIL03 + " Please login first");
+                            writer.println(Protocol.FAIL03);
                         }
                     }
                     case Protocol.QUIT -> {
@@ -98,7 +98,7 @@ public class ServerThread extends Thread {
                     }
                     default -> {
                         //Unknown command
-                        writer.println(Protocol.FAIL00 + " Unknown command");
+                        writer.println(Protocol.FAIL00);
                     }
                 }
             }
@@ -135,7 +135,7 @@ public class ServerThread extends Thread {
             }
         }
         if(loggedInUsers==1){
-            writer.println(Protocol.FAIL06 + " YOU ARE THE ONLY CONNECTED USER.");
+            writer.println(Protocol.FAIL06);
         }else if(loggedInUsers>0){
             writer.println(Protocol.OK + " " + Protocol.USERS + " " + userList.substring(0, userList.length() - 1)); //substring removes last unnecessary : from the string
             System.out.println(Protocol.OK + " " + Protocol.USERS + " " + userList.substring(0, userList.length() - 1));
@@ -154,7 +154,7 @@ public class ServerThread extends Thread {
             }
         }
         if(!userExists){
-            writer.println(Protocol.FAIL07 + " USER DOES NOT EXIST");
+            writer.println(Protocol.FAIL07);
         }
     }
 
@@ -166,7 +166,7 @@ public class ServerThread extends Thread {
         for(int i=0; i < server.users.size(); i++){
             if(server.users.get(i)!=this){
                 if(server.users.get(i).username!=null && server.users.get(i).username.equals(msgArr[1])){
-                    writer.println(Protocol.FAIL01 + " User already logged in");
+                    writer.println(Protocol.FAIL01);
                     return;
                     //continue outer; //continue the outer (while) loop
                 }
@@ -177,7 +177,7 @@ public class ServerThread extends Thread {
         Pattern special = Pattern.compile ("[!@#$%&*()+=|<>?{};:,<.>/\\[\\]~-]");
         Matcher hasSpecial = special.matcher(msgArr[1]);
         if(msgArr[1].length()>14 || msgArr[1].length()<3 || hasSpecial.find()){
-            writer.println(Protocol.FAIL02 + " Username has an invalid format or length");
+            writer.println(Protocol.FAIL02);
             return;
             //Continue; //continue the outer (while) loop
         }
@@ -205,7 +205,7 @@ public class ServerThread extends Thread {
 
                     if(!pingPongFlag){
                         parent.writer.println(Protocol.DISCONNECT + " Pong timeout");
-                        parent.writer.println(Protocol.FAIL05 + " Pong without ping");
+                        parent.writer.println(Protocol.FAIL05);
                         parent.server.users.remove(this);
                         socket.close();
                         parent.stop();
