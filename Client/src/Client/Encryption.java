@@ -27,24 +27,6 @@ public class Encryption {
         }
     }
 
-    public static SecretKey generateSessionKey(){
-        try {
-            // Initialize KeyGenerator instance with AES algorithm
-            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-            // Create secure random number generator for session key generation
-            SecureRandom secRandom = new SecureRandom();
-            // Set key size to 128 bits
-            keyGenerator.init(128);
-            // Generate and return a SecretKey object
-            return keyGenerator.generateKey();
-        }
-        catch(Exception e){
-            // If any error occurs during session key generation, print error message and return null
-            System.out.println("Error generating session key: " + e.getMessage());
-            return null;
-        }
-    }
-
     public static String encryptAES(String input, SecretKey sessionKey){
         try {
             // Initialize Cipher instance with AES algorithm
