@@ -2,6 +2,7 @@ package Server.Model;
 
 import Server.Server;
 import Server.ServerThread.ServerThread;
+import Server.ServerThread.SurveyThread;
 
 import java.io.BufferedReader;
 import java.io.PrintWriter;
@@ -14,6 +15,7 @@ public class ClientConnection {
     private final BufferedReader reader;
     private final Server server;
     private String username = null;
+    private SurveyThread surveyThread = null;
 
     public ClientConnection(ServerThread serverThread, PrintWriter writer, BufferedReader reader, Server server) {
         this.serverThread = serverThread;
@@ -42,7 +44,15 @@ public class ClientConnection {
         return username;
     }
 
+    public SurveyThread getSurveyThread() {
+        return surveyThread;
+    }
+
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public void setSurveyThread(SurveyThread surveyThread) {
+        this.surveyThread = surveyThread;
     }
 }

@@ -11,6 +11,7 @@ public class ClientConnection {
     private final BufferedReader reader;
     private boolean isLoggedIn = false;
     ArrayList<User> users = new ArrayList<>();
+    private String lastSurveyUser = "";
 
     public ClientConnection(Socket socket, PrintWriter writer, BufferedReader reader) {
         this.socket = socket;
@@ -44,5 +45,13 @@ public class ClientConnection {
 
     public void addUser(User user) {
         users.add(user);
+    }
+
+    public String getLastSurveyUser() {
+        return lastSurveyUser;
+    }
+
+    public void setLastSurveyUser(String lastSurveyUser) {
+        this.lastSurveyUser = lastSurveyUser;
     }
 }

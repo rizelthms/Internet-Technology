@@ -27,6 +27,10 @@ public class ServerThread extends Thread {
         return connection.getUsername();
     }
 
+    public void setSurveyResponse(String response){
+        Survey.surveyResponse(connection, response);
+    }
+
     public ServerThread(Socket clientSocket, Server server) {
         try {
             socket = clientSocket;
@@ -95,8 +99,24 @@ public class ServerThread extends Thread {
                         UserList.userList(connection);
                     }
                     case Protocol.PRIVATE_MSG -> {
-                        // Client is trying to send a private message
-                        PrivateMessage.privateMsg(connection, String.join(" ", Arrays.copyOfRange(msg, 2, msg.length)), msg[1]);
+                        if (connection.getUsername() != null) {
+                            // Client is trying to send a private message
+                            PrivateMessage.privateMsg(connection, String.join(" ", Arrays.copyOfRange(msg, 2, msg.length)), msg[1]);
+                        } else {
+                            connection.getWriter().println(Protocol.FAIL03);
+                        }
+                    }
+                    case Protocol.START_SURVEY -> {
+                        connection.getWriter().println(Survey.surveyStart(connection, msg));
+                    }
+                    case Protocol.START_SURVEY_OPEN -> {
+                        connection.getWriter().println(Survey.surveyStart(connection));
+                    }
+                    case Protocol.SURVEY_QUESTION -> {
+                        connection.getWriter().println(Survey.surveyQuestion(connection, messageFull));
+                    }
+                    case Protocol.SURVEY_ANSWER -> {
+                        connection.getWriter().println(Survey.surveyAnswer(connection, msg));
                     }
                     default -> {
                         //Unknown command
@@ -113,9 +133,16 @@ public class ServerThread extends Thread {
 
     public void stopThread() {
         try {
+            //remove from active users
             Server.users.remove(this);
+            //stop ping pong thread
             pingPongThread.stopThread();
 
+            //if running survey, stop survey
+            if (connection.getSurveyThread() != null)
+                connection.getSurveyThread().stopThread();
+
+            //close all connections
             connection.getWriter().close();
             connection.getReader().close();
             socket.close();
