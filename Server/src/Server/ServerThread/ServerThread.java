@@ -27,7 +27,7 @@ public class ServerThread extends Thread {
         return connection.getUsername();
     }
 
-    public void setSurveyResponse(String response){
+    public void setSurveyResponse(String response) {
         Survey.surveyResponse(connection, response);
     }
 
@@ -108,7 +108,7 @@ public class ServerThread extends Thread {
                     }
                     case Protocol.SEND_PUBLIC_KEY -> {
                         // Broadcast the public key to all users
-                        broadcastMessage(messageFull);
+                        BroadcastMessage.broadcastMessage(connection, messageFull);
                     }
                     case Protocol.SEND_SESSION_KEY -> {
                         // Share session key with other client
@@ -136,18 +136,18 @@ public class ServerThread extends Thread {
             Printer.printLineColour(e.getMessage(), Printer.ConsoleColour.RED);
 
             this.stopThread();
+        }
+    }
 
-
-    private void shareSessionKey(String msg){
+    private void shareSessionKey(String msg) {
         String[] msgArr = msg.split(" ");
 
-        for(int i=0; i < server.users.size(); i++) {
-            if (server.users.get(i).username != null && server.users.get(i).username.equals(msgArr[1])) {
-                server.users.get(i).writer.println(Protocol.SEND_SESSION_KEY + " " + this.username + " " + msgArr[2]);
+        for (int i = 0; i < Server.users.size(); i++) {
+            if (Server.users.get(i).getUsername() != null && Server.users.get(i).getUsername().equals(msgArr[1])) {
+                Server.users.get(i).getWriter().println(Protocol.SEND_SESSION_KEY + " " + connection.getUsername() + " " + msgArr[2]);
                 break;
             }
         }
-    }        }
     }
 
     public void stopThread() {

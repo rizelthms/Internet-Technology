@@ -21,8 +21,6 @@ public class Client extends Thread {
     private static PrintWriter writer;
     private BufferedReader reader;
     private boolean isLoggedIn = false;
-    // List to store connected users
-    ArrayList<User> users = new ArrayList<>();
     // KeyPair to store the RSA keys
     KeyPair RSAkeys;
     // HashMap to store public keys of all connected users
