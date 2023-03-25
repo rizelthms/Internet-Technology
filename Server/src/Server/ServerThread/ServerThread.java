@@ -61,6 +61,7 @@ public class ServerThread extends Thread {
             while (true) {
                 //Read message from client
                 String messageFull = connection.getReader().readLine();
+
                 if (messageFull == null)
                     continue;
 
@@ -72,6 +73,7 @@ public class ServerThread extends Thread {
                         pingPongThread.setHasPonged(true);
                     }
                     case Protocol.IDENTIFY -> {
+                        System.out.println("got here");
                         //If the user is new
                         if (connection.getUsername() == null) {
                             CreateUser.createUser(connection, msg);

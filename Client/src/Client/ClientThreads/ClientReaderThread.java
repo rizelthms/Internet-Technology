@@ -1,12 +1,18 @@
-package Client;
+package Client.ClientThreads;
 
 import Client.Model.ClientConnection;
 import Client.Model.User;
 import Shared.Printer;
 import Shared.Protocol;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Base64;
+
+import static Client.ClientThreads.ClientMethods.Encryption.decryptAES;
+import static Client.ClientThreads.ClientMethods.Encryption.decryptRSA;
 
 public class ClientReaderThread {
     private final ClientConnection connection;
@@ -73,13 +79,46 @@ public class ClientReaderThread {
                             "[" + message[1] + "] " + String.join(" ", Arrays.copyOfRange(message, 2, message.length)),
                             this.connection.getUsers().stream().filter(user -> user.username().equals(message[1])).findFirst().get().colour());
                 }
+
                 case Protocol.RECEIVE_PRIVATE_MSG -> {
-                    Printer.printLineColour("PRIVATE MESSAGE " + "[" + message[1] + "] " + String.join(" ", Arrays.copyOfRange(message, 2, message.length)), Printer.ConsoleColour.PURPLE);
+                    //Retrieve session key
+                    SecretKey sessionKey = new SecretKeySpec(Base64.getDecoder().decode(connection.getSessionKeys().get(message[1])), "AES");
+
+                    //Decrypt message
+                    String decryptedMessage = decryptAES(message[2], sessionKey);
+
+                    Printer.printLineColour("PRIVATE MESSAGE " + "[" + message[1] + "] " + decryptedMessage, Printer.ConsoleColour.PURPLE);
+                    //Printer.printLineColour("PRIVATE MESSAGE " + "[" + message[1] + "] " + String.join(" ", Arrays.copyOfRange(message, 2, message.length)), Printer.ConsoleColour.PURPLE);
                 }
                 case Protocol.JOINED -> {
-                    if (this.connection.isLoggedIn()) {
+                    if(connection.isLoggedIn()) {
                         Printer.printLineColourBold(message[1] + " has joined the chat!", Printer.ConsoleColour.GREEN);
+
+                        //Share public key
+                        connection.getWriter().println(Protocol.SEND_PUBLIC_KEY + " " + Base64.getEncoder().encodeToString(connection.getRSAkeys().getPublic().getEncoded()));
+                        connection.getWriter().flush();
                     }
+                }
+                case Protocol.LEFT -> {
+                    if(connection.isLoggedIn()) {
+                        Printer.printLineColourBold(message[1] + " has left the chat!", Printer.ConsoleColour.YELLOW);
+
+                        //Delete session key
+                        if(connection.getSessionKeys().containsKey(message[1])){
+                            connection.getSessionKeys().remove(message[1]);
+                        }
+                    }
+                }
+                case Protocol.SEND_PUBLIC_KEY -> {
+                    //Store the new users public key
+                    connection.getPublicKeys().put(message[1], message[2]);
+                    connection.getWriter().println(Protocol.OK + " " + Protocol.SEND_PUBLIC_KEY);
+                }
+                case Protocol.SEND_SESSION_KEY -> {
+                    //Decrypt session key
+                    String sessionKey = decryptRSA(message[2], connection.getRSAkeys().getPrivate());
+                    connection.getSessionKeys().put(message[1], sessionKey);
+                    connection.getWriter().println(Protocol.OK + " " + Protocol.SEND_SESSION_KEY);
                 }
                 case Protocol.SURVEY_REQUEST ->{
                     Printer.printLineColour(message[1] + " asks you to enter the following survey:", Printer.ConsoleColour.WHITE);

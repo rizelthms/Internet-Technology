@@ -1,12 +1,13 @@
-package Client;
+package Client.ClientThreads.ClientMethods;
+
+import Client.Model.ClientConnection;
+import Shared.Protocol;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.SecureRandom;
+import java.security.*;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 public class Encryption {
@@ -85,6 +86,32 @@ public class Encryption {
         catch(Exception e){
             System.out.println("Error decrypting: " + e.getMessage());
             return null;
+        }
+    }
+
+    public static void shareSessionKey(ClientConnection connection, String username) {
+        try {
+            // Check if the session key already exists for the username
+            if (!connection.getSessionKeys().containsKey(username)) {
+                // Generate a new AES session key
+                KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+                keyGenerator.init(128);
+                SecretKey sessionKey = keyGenerator.generateKey();
+                // Store the encoded session key in the sessionKeys map
+                connection.getSessionKeys().put(username, Base64.getEncoder().encodeToString(sessionKey.getEncoded()));
+
+                //Encrypt with RSA
+                //Change string public key back to public key object
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                PublicKey pubKey = (PublicKey) keyFactory.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(connection.getPublicKeys().get(username))));
+                //Encrypt the session key with the public key
+                String encryptedSessionKey = Encryption.encryptRSA(Base64.getEncoder().encodeToString(sessionKey.getEncoded()), pubKey);
+                //Send the encrypted session key to the recipient
+                connection.getWriter().println(Protocol.SEND_SESSION_KEY + " " + username + " " + encryptedSessionKey);
+            }
+        } catch (Exception e) {
+            System.out.println("Error generating session key: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
