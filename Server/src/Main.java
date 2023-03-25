@@ -1,4 +1,5 @@
 import Shared.Printer;
+import Server.Server;
 
 import java.io.IOException;
 

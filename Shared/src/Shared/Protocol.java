@@ -17,6 +17,12 @@ public class Protocol {
     public static final String USERS = "USERS";
     public static final String PING = "PING";
     public static final String PONG = "PONG";
+    
+    public static final String START_SURVEY = "SV";
+    public static final String START_SURVEY_OPEN = "SVO";
+    public static final String SURVEY_QUESTION = "SVQ";
+    public static final String SURVEY_REQUEST = "SVR";
+    public static final String SURVEY_ANSWER = "SVA";
 
     public static final String FAIL00 = "FAIL00 UNKNOWN COMMAND";
     public static final String FAIL01 = "FAIL01 USER ALREADY LOGGED IN";
@@ -27,4 +33,8 @@ public class Protocol {
 
     public static final String FAIL06 = "FAIL06 YOU ARE THE ONLY CONNECTED USER";
     public static final String FAIL07 = "FAIL07 USER DOES NOT EXIST";
+    public static final String FAIL08 = "FAIL08 CANNOT START SURVEY, TO FEW USERS";
+    public static final String FAIL09 = "FAIL09 SURVEY ALREADY STARTED";
+    public static final String FAIL10 = "FAIL10 NO SURVEY RUNNING";
 }
+
